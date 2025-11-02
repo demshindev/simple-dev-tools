@@ -40,7 +40,7 @@ export default function JwtEncoder() {
   const [token, setToken] = useState('')
   const [decoded, setDecoded] = useState('')
   const [copied, setCopied] = useState(false)
-  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {

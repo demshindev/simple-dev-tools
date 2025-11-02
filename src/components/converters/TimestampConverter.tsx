@@ -7,7 +7,7 @@ export default function TimestampConverter() {
   const [mode, setMode] = useState<'to-datetime' | 'to-timestamp'>('to-datetime')
   const [copied, setCopied] = useState(false)
   const [currentTime, setCurrentTime] = useState(Date.now())
-  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {

@@ -10,7 +10,7 @@ marked.setOptions({
 export default function MarkdownPreview() {
   const [markdown, setMarkdown] = useState('# Hello World\n\nThis is **bold** and this is *italic*.')
   const [copied, setCopied] = useState(false)
-  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {

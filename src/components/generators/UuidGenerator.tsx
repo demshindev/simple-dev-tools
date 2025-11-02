@@ -24,7 +24,7 @@ export default function UuidGenerator() {
   const [count, setCount] = useState(1)
   const [version, setVersion] = useState<4 | 1>(4)
   const [copied, setCopied] = useState(false)
-  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {

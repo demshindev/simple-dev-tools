@@ -15,7 +15,7 @@ export default function LoremIpsum() {
   const [count, setCount] = useState(3)
   const [output, setOutput] = useState('')
   const [copied, setCopied] = useState(false)
-  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {

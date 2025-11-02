@@ -41,7 +41,7 @@ export default function ColorPicker() {
   const [color, setColor] = useState('#3b82f6')
   const [backgroundColor, setBackgroundColor] = useState('#ffffff')
   const [copied, setCopied] = useState('')
-  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {

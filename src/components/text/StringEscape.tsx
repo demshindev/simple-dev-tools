@@ -6,7 +6,7 @@ export default function StringEscape() {
   const [output, setOutput] = useState('')
   const [mode, setMode] = useState<'escape' | 'unescape'>('escape')
   const [copied, setCopied] = useState(false)
-  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {

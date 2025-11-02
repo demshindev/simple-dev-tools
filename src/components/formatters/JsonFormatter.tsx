@@ -7,7 +7,7 @@ export default function JsonFormatter() {
   const [error, setError] = useState('')
   const [mode, setMode] = useState<'format' | 'minify'>('format')
   const [copied, setCopied] = useState(false)
-  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {
