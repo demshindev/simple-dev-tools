@@ -1,6 +1,11 @@
 import { FiGithub, FiGlobe } from 'react-icons/fi'
+import { WEBSITE_URL, APP_NAME, GITHUB_REPO, LICENSE_URL } from '../constants'
 
-export default function Footer() {
+interface FooterProps {
+  onPrivacyClick: () => void
+}
+
+export default function Footer({ onPrivacyClick }: FooterProps) {
   const currentYear = new Date().getFullYear()
 
   return (
@@ -11,23 +16,30 @@ export default function Footer() {
             <div className="text-center sm:text-left">
               Created by{' '}
               <a
-                href="https://demshin.dev"
+                href={WEBSITE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary-600 hover:text-primary-700 font-medium transition"
               >
-                demshin.dev
+                {WEBSITE_URL.replace('https://', '')}
               </a>
             </div>
             <span className="hidden sm:inline text-gray-400">•</span>
             <div className="text-center sm:text-left">
-              © {currentYear} SimpleDevTools
+              © {currentYear} {APP_NAME}
             </div>
+            <span className="hidden sm:inline text-gray-400">•</span>
+            <button
+              onClick={onPrivacyClick}
+              className="text-center sm:text-left text-primary-600 hover:text-primary-700 transition"
+            >
+              Privacy Policy
+            </button>
             <span className="hidden sm:inline text-gray-400">•</span>
             <div className="text-center sm:text-left">
               Licensed under{' '}
               <a
-                href="https://github.com/demshindev/simple-dev-tools/blob/main/LICENSE"
+                href={LICENSE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary-600 hover:text-primary-700 transition"
@@ -39,7 +51,7 @@ export default function Footer() {
           
           <div className="flex items-center gap-3 sm:gap-4">
             <a
-              href="https://github.com/demshindev/simple-dev-tools"
+              href={GITHUB_REPO}
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-600 hover:text-gray-900 transition"
@@ -48,11 +60,11 @@ export default function Footer() {
               <FiGithub size={18} />
             </a>
             <a
-              href="https://demshin.dev"
+              href={WEBSITE_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-600 hover:text-gray-900 transition"
-              aria-label="demshin.dev"
+              aria-label={WEBSITE_URL.replace('https://', '')}
             >
               <FiGlobe size={18} />
             </a>

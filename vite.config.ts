@@ -2,6 +2,7 @@ import { defineConfig, loadEnv, type ConfigEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { createHtmlPlugin } from 'vite-plugin-html'
 import { generateSEOFilesPlugin } from './scripts/generate-seo-files'
+import { APP_NAME, AUTHOR_NAME } from './src/constants'
 
 export default defineConfig(({ mode }: ConfigEnv) => {
   const env = loadEnv(mode, process.cwd(), '')
@@ -18,7 +19,9 @@ export default defineConfig(({ mode }: ConfigEnv) => {
       createHtmlPlugin({
         inject: {
           data: {
-            APP_DOMAIN: `https://${domain}`
+            APP_DOMAIN: `https://${domain}`,
+            APP_NAME,
+            AUTHOR_NAME
           }
         }
       }),

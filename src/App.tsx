@@ -44,6 +44,9 @@ import MarkdownPreview from './components/text/MarkdownPreview'
 
 import ColorPicker from './components/graphics/ColorPicker'
 import Footer from './components/Footer'
+import CookieBanner from './components/CookieBanner'
+import PrivacyPolicy from './components/PrivacyPolicy'
+import { APP_NAME } from './constants'
 
 type CategoryId = 'converters' | 'encoders' | 'formatters' | 'generators' | 'text' | 'graphics'
 type ToolId = 
@@ -138,6 +141,7 @@ function App() {
   )
   const [activeTool, setActiveTool] = useState<ToolId | null>('uuid')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false)
 
   const handleHomeClick = () => {
     window.location.reload()
@@ -193,7 +197,7 @@ function App() {
                 className="text-lg md:text-xl font-bold text-gray-800 hover:text-primary-600 transition cursor-pointer text-left"
                 aria-label="Go to homepage"
               >
-                SimpleDevTools
+                {APP_NAME}
               </button>
             </div>
             <button
@@ -267,7 +271,7 @@ function App() {
               className="text-lg font-bold text-gray-800 hover:text-primary-600 transition cursor-pointer"
               aria-label="Go to homepage"
             >
-              SimpleDevTools
+              {APP_NAME}
             </button>
             <div className="w-10" />
           </div>
@@ -283,8 +287,10 @@ function App() {
               )}
             </div>
           </div>
-          <Footer />
+          <Footer onPrivacyClick={() => setIsPrivacyOpen(true)} />
       </main>
+      <CookieBanner onPrivacyClick={() => setIsPrivacyOpen(true)} />
+      <PrivacyPolicy isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
     </div>
   )
 }

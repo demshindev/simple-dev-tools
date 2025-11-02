@@ -1,0 +1,5 @@
+export const WEBSITE_URL = 'https://demshin.dev'
+export const APP_NAME = 'SimpleDevTools'
+export const AUTHOR_NAME = 'Demshin Dev'
+export const GITHUB_REPO = 'https://github.com/demshindev/simple-dev-tools'
+export const LICENSE_URL = 'https://github.com/demshindev/simple-dev-tools/blob/main/LICENSE'
