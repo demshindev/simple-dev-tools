@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
 
 async function generateHash(text: string, algorithm: string): Promise<string> {
@@ -24,15 +24,23 @@ export default function HashGenerator() {
   const [output, setOutput] = useState('')
   const [copied, setCopied] = useState(false)
 
-  const handleGenerate = async () => {
+  useEffect(() => {
     if (!input.trim()) {
       setOutput('')
       return
     }
 
-    const hash = await generateHash(input, algorithm)
-    setOutput(hash)
-  }
+    let cancelled = false
+    generateHash(input, algorithm).then(hash => {
+      if (!cancelled) {
+        setOutput(hash)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [input, algorithm])
 
   const copyToClipboard = async () => {
     if (output) {
@@ -64,16 +72,7 @@ export default function HashGenerator() {
         </select>
       </div>
 
-      <div className="mb-3 sm:mb-4">
-        <button
-          onClick={handleGenerate}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          Generate hash
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Input text

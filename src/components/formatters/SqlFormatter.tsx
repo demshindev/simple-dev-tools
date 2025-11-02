@@ -1,62 +1,58 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
+import { format } from 'sql-formatter'
 
 function formatSQL(sql: string): string {
-  let formatted = sql
-    .replace(/\s+/g, ' ')
-    .trim()
-
-  const keywords = [
-    'SELECT', 'FROM', 'WHERE', 'JOIN', 'INNER', 'LEFT', 'RIGHT', 'OUTER',
-    'ON', 'AND', 'OR', 'NOT', 'IN', 'EXISTS', 'GROUP', 'BY', 'ORDER',
-    'HAVING', 'AS', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'INSERT',
-    'INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE', 'CREATE', 'TABLE',
-    'ALTER', 'DROP', 'INDEX', 'UNION', 'ALL', 'DISTINCT', 'LIMIT',
-    'OFFSET', 'INTERSECT', 'EXCEPT'
-  ]
-
-  keywords.forEach(keyword => {
-    const regex = new RegExp(`\\b${keyword}\\b`, 'gi')
-    formatted = formatted.replace(regex, keyword)
-  })
-
-  formatted = formatted
-    .replace(/\bSELECT\b/gi, '\nSELECT')
-    .replace(/\bFROM\b/gi, '\nFROM')
-    .replace(/\bWHERE\b/gi, '\nWHERE')
-    .replace(/\bJOIN\b/gi, '\nJOIN')
-    .replace(/\bINNER\s+JOIN\b/gi, '\nINNER JOIN')
-    .replace(/\bLEFT\s+JOIN\b/gi, '\nLEFT JOIN')
-    .replace(/\bRIGHT\s+JOIN\b/gi, '\nRIGHT JOIN')
-    .replace(/\bON\b/gi, '\n  ON')
-    .replace(/\bAND\b/gi, '\n  AND')
-    .replace(/\bOR\b/gi, '\n  OR')
-    .replace(/\bGROUP\s+BY\b/gi, '\nGROUP BY')
-    .replace(/\bORDER\s+BY\b/gi, '\nORDER BY')
-    .replace(/\bHAVING\b/gi, '\nHAVING')
-
-  return formatted.trim()
+  try {
+    return format(sql, {
+      language: 'sql',
+      tabWidth: 2
+    })
+  } catch (e) {
+    throw new Error('Invalid SQL')
+  }
 }
 
 export default function SqlFormatter() {
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
+  const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const handleFormat = () => {
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
     if (!input.trim()) {
       setOutput('')
+      setError('')
       return
     }
-    setOutput(formatSQL(input))
-  }
+    
+    try {
+      setError('')
+      setOutput(formatSQL(input))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Invalid SQL')
+      setOutput('')
+    }
+  }, [input])
 
   const copyToClipboard = async () => {
     if (output) {
       try {
         await navigator.clipboard.writeText(output)
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current)
+        }
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
       } catch (e) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy to clipboard:', e)
@@ -68,17 +64,14 @@ export default function SqlFormatter() {
   return (
     <div>
       <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">SQL Formatter</h2>
-      
-      <div className="mb-3 sm:mb-4">
-        <button
-          onClick={handleFormat}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          Format
-        </button>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      {error && (
+        <div className="mb-3 sm:mb-4 p-2 sm:p-3 text-xs sm:text-sm bg-red-100 text-red-800 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Input SQL

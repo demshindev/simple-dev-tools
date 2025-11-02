@@ -24,8 +24,8 @@ export default function CookieBanner({ onPrivacyClick }: CookieBannerProps) {
   if (!isVisible) return null
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-2 min-w-[300px]">
-      <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-2xl border border-gray-200 p-3">
+    <div className="fixed bottom-0 left-0 right-0 z-50 p-1.5 sm:p-2">
+      <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-2xl border border-gray-200 p-2 sm:p-3">
         <div className="flex flex-col gap-3">
           <div className="flex items-start gap-2 flex-1 min-w-0">
             <div className="flex-shrink-0 mt-0.5">

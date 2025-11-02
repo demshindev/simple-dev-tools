@@ -13,7 +13,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
   }
   
   return {
-    base: '/',
+  base: '/',
     plugins: [
       react(),
       createHtmlPlugin({
@@ -29,10 +29,10 @@ export default defineConfig(({ mode }: ConfigEnv) => {
         domain
       })
     ],
-    build: {
+  build: {
       outDir: 'dist',
-      rollupOptions: {
-        output: {
+    rollupOptions: {
+      output: {
           manualChunks(id) {
             if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
               return 'vendor'
@@ -43,20 +43,20 @@ export default defineConfig(({ mode }: ConfigEnv) => {
             if (id.includes('node_modules')) {
               return 'vendor-other'
             }
-          }
         }
-      },
+      }
+    },
       minify: mode === 'production' ? 'terser' : false,
       terserOptions: mode === 'production' ? {
-        compress: {
-          drop_console: true,
+      compress: {
+        drop_console: true,
           drop_debugger: true,
           pure_funcs: ['console.log', 'console.info', 'console.debug'],
           passes: 2
         },
         format: {
           comments: false
-        }
+      }
       } : undefined
     }
   }

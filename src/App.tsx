@@ -190,7 +190,7 @@ function App() {
   }, [currentCategoryId])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 min-w-[300px] flex">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex overflow-x-hidden">
       <aside className={`
           fixed md:static inset-y-0 left-0 z-50
           w-64 bg-white shadow-lg
@@ -305,8 +305,8 @@ function App() {
             <div className="w-10" />
           </div>
           
-          <div className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 min-w-0">
-            <div className="bg-white rounded-lg md:rounded-xl shadow-lg md:shadow-xl p-3 sm:p-4 md:p-6 max-w-full min-w-0 overflow-x-hidden">
+          <div className="flex-1 p-2 sm:p-4 md:p-6 lg:p-8 min-w-0">
+            <div className="bg-white rounded-lg md:rounded-xl shadow-lg md:shadow-xl p-2 sm:p-4 md:p-6 max-w-full min-w-0 overflow-x-hidden">
               <Routes>
                 <Route path="/" element={
                 <div className="text-center text-gray-500 py-8 md:py-12 text-sm md:text-base">

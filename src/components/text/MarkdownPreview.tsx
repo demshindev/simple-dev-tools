@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
 import { marked } from 'marked'
 
@@ -10,6 +10,15 @@ marked.setOptions({
 export default function MarkdownPreview() {
   const [markdown, setMarkdown] = useState('# Hello World\n\nThis is **bold** and this is *italic*.')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
 
   let html = marked.parse(markdown) as string
   html = html.replace(/<a href=/g, '<a target="_blank" rel="noopener noreferrer" href=')
@@ -17,8 +26,11 @@ export default function MarkdownPreview() {
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(markdown)
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
     } catch (e) {
       if (import.meta.env.DEV) {
         console.error('Failed to copy to clipboard:', e)

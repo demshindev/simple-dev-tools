@@ -1,70 +1,81 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
+import { XMLBuilder, XMLParser } from 'fast-xml-parser'
+
+const parser = new XMLParser({ ignoreAttributes: false, preserveOrder: false })
+const builder = new XMLBuilder({ 
+  ignoreAttributes: false,
+  format: true,
+  indentBy: '  '
+})
 
 function formatXML(xml: string): string {
-  let formatted = ''
-  let indent = 0
-  const tab = '  '
-
-  xml.split(/>\s*</).forEach((node) => {
-    if (node.match(/^\//)) {
-      indent--
-    }
-    formatted += tab.repeat(Math.max(0, indent)) + '<' + node + '>\n'
-    if (node.match(/^[^\/!]/) && !node.match(/\/$/)) {
-      indent++
-    }
-  })
-
-  return formatted.trim()
+  try {
+    const obj = parser.parse(xml)
+    return builder.build(obj)
+  } catch (e) {
+    throw new Error('Invalid XML')
+  }
 }
 
 function minifyXML(xml: string): string {
-  return xml.replace(/>\s+</g, '><').trim()
+  try {
+    const obj = parser.parse(xml)
+    const minBuilder = new XMLBuilder({ 
+      ignoreAttributes: false,
+      format: false
+    })
+    return minBuilder.build(obj)
+  } catch (e) {
+    throw new Error('Invalid XML')
+  }
 }
 
 export default function XmlFormatter() {
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
   const [error, setError] = useState('')
+  const [mode, setMode] = useState<'format' | 'minify'>('format')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const format = () => {
-    setError('')
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
     if (!input.trim()) {
       setOutput('')
+      setError('')
       return
     }
 
     try {
-      setOutput(formatXML(input))
+      setError('')
+      if (mode === 'format') {
+        setOutput(formatXML(input))
+      } else {
+        setOutput(minifyXML(input))
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Invalid XML')
       setOutput('')
     }
-  }
-
-  const minify = () => {
-    setError('')
-    if (!input.trim()) {
-      setOutput('')
-      return
-    }
-
-    try {
-      setOutput(minifyXML(input))
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Invalid XML')
-      setOutput('')
-    }
-  }
+  }, [input, mode])
 
   const copyToClipboard = async () => {
     if (output) {
       try {
         await navigator.clipboard.writeText(output)
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current)
+        }
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
       } catch (e) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy to clipboard:', e)
@@ -77,19 +88,30 @@ export default function XmlFormatter() {
     <div>
       <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">XML Formatter</h2>
       
-      <div className="mb-3 sm:mb-4 flex flex-wrap gap-2">
-        <button
-          onClick={format}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
-        >
-          Format
-        </button>
-        <button
-          onClick={minify}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-        >
-          Minify
-        </button>
+      <div className="mb-3 sm:mb-4">
+        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Mode:</label>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setMode('format')}
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
+              mode === 'format'
+                ? 'bg-primary-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Format
+          </button>
+          <button
+            onClick={() => setMode('minify')}
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
+              mode === 'minify'
+                ? 'bg-primary-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Minify
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -98,7 +120,7 @@ export default function XmlFormatter() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Input XML

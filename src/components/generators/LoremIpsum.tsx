@@ -1,39 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
-
-const words = [
-  'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit',
-  'sed', 'do', 'eiusmod', 'tempor', 'incididunt', 'ut', 'labore', 'et', 'dolore',
-  'magna', 'aliqua', 'enim', 'ad', 'minim', 'veniam', 'quis', 'nostrud',
-  'exercitation', 'ullamco', 'laboris', 'nisi', 'aliquip', 'ex', 'ea', 'commodo',
-  'consequat', 'duis', 'aute', 'irure', 'in', 'reprehenderit', 'voluptate',
-  'velit', 'esse', 'cillum', 'fugiat', 'nulla', 'pariatur', 'excepteur', 'sint',
-  'occaecat', 'cupidatat', 'non', 'proident', 'sunt', 'culpa', 'qui', 'officia',
-  'deserunt', 'mollit', 'anim', 'id', 'est', 'laborum'
-]
+import { loremIpsum } from 'lorem-ipsum'
 
 function generateLoremIpsum(type: 'words' | 'sentences' | 'paragraphs', count: number): string {
-  if (type === 'words') {
-    return Array.from({ length: count }, () => words[Math.floor(Math.random() * words.length)]).join(' ')
-  }
-
-  if (type === 'sentences') {
-    const sentences: string[] = []
-    for (let i = 0; i < count; i++) {
-      const wordCount = Math.floor(Math.random() * 15) + 5
-      const sentence = Array.from({ length: wordCount }, () => words[Math.floor(Math.random() * words.length)]).join(' ')
-      sentences.push(sentence.charAt(0).toUpperCase() + sentence.slice(1) + '.')
-    }
-    return sentences.join(' ')
-  }
-
-  const paragraphs: string[] = []
-  for (let i = 0; i < count; i++) {
-    const sentenceCount = Math.floor(Math.random() * 3) + 2
-    const paragraph = generateLoremIpsum('sentences', sentenceCount)
-    paragraphs.push(paragraph)
-  }
-  return paragraphs.join('\n\n')
+  return loremIpsum({
+    count,
+    units: type === 'words' ? 'words' : type === 'sentences' ? 'sentences' : 'paragraphs',
+    format: 'plain'
+  })
 }
 
 export default function LoremIpsum() {
@@ -41,6 +15,15 @@ export default function LoremIpsum() {
   const [count, setCount] = useState(3)
   const [output, setOutput] = useState('')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const handleGenerate = () => {
     setOutput(generateLoremIpsum(type, count))
@@ -50,8 +33,11 @@ export default function LoremIpsum() {
     if (output) {
       try {
         await navigator.clipboard.writeText(output)
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current)
+        }
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
       } catch (e) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy to clipboard:', e)

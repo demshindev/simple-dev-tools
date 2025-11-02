@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
 
 export default function Base64Tool() {
@@ -6,39 +6,44 @@ export default function Base64Tool() {
   const [output, setOutput] = useState('')
   const [mode, setMode] = useState<'encode' | 'decode'>('encode')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const encode = () => {
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!input.trim()) {
+      setOutput('')
+      return
+    }
+
     try {
-      const encoded = btoa(unescape(encodeURIComponent(input)))
-      setOutput(encoded)
+      if (mode === 'encode') {
+        const encoded = btoa(unescape(encodeURIComponent(input)))
+        setOutput(encoded)
+      } else {
+        const decoded = decodeURIComponent(escape(atob(input)))
+        setOutput(decoded)
+      }
     } catch (e) {
-      setOutput('Encoding error')
+      setOutput(mode === 'encode' ? 'Encoding error' : 'Decoding error: invalid Base64 format')
     }
-  }
-
-  const decode = () => {
-    try {
-      const decoded = decodeURIComponent(escape(atob(input)))
-      setOutput(decoded)
-    } catch (e) {
-      setOutput('Decoding error: invalid Base64 format')
-    }
-  }
-
-  const handleConvert = () => {
-    if (mode === 'encode') {
-      encode()
-    } else {
-      decode()
-    }
-  }
+  }, [input, mode])
 
   const copyToClipboard = async () => {
     if (output) {
       try {
         await navigator.clipboard.writeText(output)
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current)
+        }
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
       } catch (e) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy to clipboard:', e)
@@ -77,16 +82,7 @@ export default function Base64Tool() {
         </div>
       </div>
 
-      <div className="mb-3 sm:mb-4">
-        <button
-          onClick={handleConvert}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          {mode === 'encode' ? 'Encode' : 'Decode'}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             {mode === 'encode' ? 'Text to encode' : 'Base64 string'}

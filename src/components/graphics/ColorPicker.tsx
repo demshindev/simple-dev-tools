@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
@@ -41,6 +41,15 @@ export default function ColorPicker() {
   const [color, setColor] = useState('#3b82f6')
   const [backgroundColor, setBackgroundColor] = useState('#ffffff')
   const [copied, setCopied] = useState('')
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const rgb = hexToRgb(color) || { r: 59, g: 130, b: 246 }
   const bgRgb = hexToRgb(backgroundColor) || { r: 255, g: 255, b: 255 }
@@ -51,8 +60,11 @@ export default function ColorPicker() {
   const copyToClipboard = async (text: string, type: string) => {
     try {
       await navigator.clipboard.writeText(text)
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
       setCopied(type)
-      setTimeout(() => setCopied(''), 2000)
+      copyTimeoutRef.current = setTimeout(() => setCopied(''), 2000)
     } catch (e) {
       if (import.meta.env.DEV) {
         console.error('Failed to copy to clipboard:', e)
@@ -62,28 +74,28 @@ export default function ColorPicker() {
 
   return (
     <div className="min-w-0">
-      <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Color Picker & Contrast Checker</h2>
+      <h2 className="text-base sm:text-xl md:text-2xl font-bold text-gray-800 mb-2 sm:mb-3 md:mb-4 break-words">Color Picker & Contrast Checker</h2>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
         <div className="min-w-0">
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Text color
           </label>
-          <div className="flex gap-2 mb-2 min-w-0">
+          <div className="flex gap-1 sm:gap-2 mb-2 min-w-0">
             <input
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="w-12 sm:w-16 h-10 sm:h-12 border border-gray-300 rounded cursor-pointer flex-shrink-0"
+              className="w-10 sm:w-12 md:w-16 h-9 sm:h-10 md:h-12 border border-gray-300 rounded cursor-pointer flex-shrink-0"
             />
             <input
               type="text"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="flex-1 min-w-0 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="flex-1 min-w-0 px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
-          <div className="bg-gray-50 p-2 sm:p-3 rounded-lg space-y-1 min-w-0 overflow-hidden">
+          <div className="bg-gray-50 p-1.5 sm:p-2 md:p-3 rounded-lg space-y-1 min-w-0 overflow-hidden">
             <div className="text-xs sm:text-sm break-words">
               <strong>RGB:</strong> rgb({rgb.r}, {rgb.g}, {rgb.b})
               <button
@@ -104,21 +116,21 @@ export default function ColorPicker() {
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Background color
           </label>
-          <div className="flex gap-2 mb-2 min-w-0">
+          <div className="flex gap-1 sm:gap-2 mb-2 min-w-0">
             <input
               type="color"
               value={backgroundColor}
               onChange={(e) => setBackgroundColor(e.target.value)}
-              className="w-12 sm:w-16 h-10 sm:h-12 border border-gray-300 rounded cursor-pointer flex-shrink-0"
+              className="w-10 sm:w-12 md:w-16 h-9 sm:h-10 md:h-12 border border-gray-300 rounded cursor-pointer flex-shrink-0"
             />
             <input
               type="text"
               value={backgroundColor}
               onChange={(e) => setBackgroundColor(e.target.value)}
-              className="flex-1 min-w-0 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="flex-1 min-w-0 px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
-          <div className="bg-gray-50 p-2 sm:p-3 rounded-lg space-y-1 min-w-0 overflow-hidden">
+          <div className="bg-gray-50 p-1.5 sm:p-2 md:p-3 rounded-lg space-y-1 min-w-0 overflow-hidden">
             <div className="text-xs sm:text-sm break-words">
               <strong>RGB:</strong> rgb({bgRgb.r}, {bgRgb.g}, {bgRgb.b})
               <button
@@ -133,14 +145,14 @@ export default function ColorPicker() {
         </div>
       </div>
 
-      <div className="mb-4 sm:mb-6">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Preview</h3>
+      <div className="mb-3 sm:mb-4 md:mb-6">
+        <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 mb-1.5 sm:mb-2">Preview</h3>
         <div
-          className="p-4 sm:p-8 rounded-lg text-center"
+          className="p-3 sm:p-4 md:p-8 rounded-lg text-center"
           style={{ backgroundColor: backgroundColor }}
         >
           <p
-            className="text-xl sm:text-2xl font-bold"
+            className="text-lg sm:text-xl md:text-2xl font-bold"
             style={{ color: color }}
           >
             Sample text
@@ -148,8 +160,8 @@ export default function ColorPicker() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg min-w-0 overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+        <div className="bg-gray-50 p-2 sm:p-3 md:p-4 rounded-lg min-w-0 overflow-hidden">
           <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">
             Contrast
           </h3>
@@ -172,12 +184,12 @@ export default function ColorPicker() {
           </div>
         </div>
 
-        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg min-w-0 overflow-hidden">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">
+        <div className="bg-gray-50 p-2 sm:p-3 md:p-4 rounded-lg min-w-0 overflow-hidden">
+          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 mb-1.5 sm:mb-2">
             Color codes
           </h3>
-          <div className="space-y-2 text-xs sm:text-sm font-mono min-w-0">
-            <div className="flex items-center justify-between gap-2 min-w-0">
+          <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm font-mono min-w-0">
+            <div className="flex items-center justify-between gap-1 sm:gap-2 min-w-0">
               <span className="flex-shrink-0">HEX:</span>
               <span className="flex items-center gap-2 min-w-0 flex-1">
                 <span className="break-all min-w-0">{color}</span>
@@ -190,10 +202,10 @@ export default function ColorPicker() {
                 </button>
               </span>
             </div>
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="flex-shrink-0">RGB:</span>
-              <span className="flex items-center gap-2 min-w-0 flex-1">
-                <span className="break-all min-w-0">rgb({rgb.r}, {rgb.g}, {rgb.b})</span>
+            <div className="flex items-center justify-between gap-1 sm:gap-2 min-w-0">
+              <span className="flex-shrink-0 text-xs">RGB:</span>
+              <span className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
+                <span className="break-all min-w-0 text-xs">rgb({rgb.r}, {rgb.g}, {rgb.b})</span>
                 <button
                   onClick={() => copyToClipboard(`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`, 'rgb-full')}
                   className="text-primary-600 hover:text-primary-700 flex-shrink-0"
@@ -203,10 +215,10 @@ export default function ColorPicker() {
                 </button>
               </span>
             </div>
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="flex-shrink-0">RGBA:</span>
-              <span className="flex items-center gap-2 min-w-0 flex-1">
-                <span className="break-all min-w-0">rgba({rgb.r}, {rgb.g}, {rgb.b}, 1)</span>
+            <div className="flex items-center justify-between gap-1 sm:gap-2 min-w-0">
+              <span className="flex-shrink-0 text-xs">RGBA:</span>
+              <span className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
+                <span className="break-all min-w-0 text-xs">rgba({rgb.r}, {rgb.g}, {rgb.b}, 1)</span>
                 <button
                   onClick={() => copyToClipboard(`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`, 'rgba')}
                   className="text-primary-600 hover:text-primary-700 flex-shrink-0"

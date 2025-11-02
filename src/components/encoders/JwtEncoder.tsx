@@ -1,8 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
 
 function base64UrlEncode(str: string): string {
-  return btoa(str)
+  const encoder = new TextEncoder()
+  const bytes = encoder.encode(str)
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  return btoa(binary)
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, '')
@@ -14,7 +20,13 @@ function base64UrlDecode(str: string): string {
     str += '='
   }
   try {
-    return atob(str)
+    const binary = atob(str)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i)
+    }
+    const decoder = new TextDecoder()
+    return decoder.decode(bytes)
   } catch {
     throw new Error('Invalid base64url')
   }
@@ -28,11 +40,48 @@ export default function JwtEncoder() {
   const [token, setToken] = useState('')
   const [decoded, setDecoded] = useState('')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const encode = () => {
     try {
-      JSON.parse(header)
-      JSON.parse(payload)
+      let headerObj
+      try {
+        headerObj = JSON.parse(header)
+        if (typeof headerObj !== 'object' || headerObj === null || Array.isArray(headerObj)) {
+          setToken('Error: header must be a JSON object')
+          setDecoded('')
+          return
+        }
+      } catch (e) {
+        const errorMsg = e instanceof Error ? e.message : 'parse error'
+        setToken(`Error: invalid JSON in header - ${errorMsg}`)
+        setDecoded('')
+        return
+      }
+
+      let payloadObj
+      try {
+        payloadObj = JSON.parse(payload)
+        if (typeof payloadObj !== 'object' || payloadObj === null || Array.isArray(payloadObj)) {
+          setToken('Error: payload must be a JSON object')
+          setDecoded('')
+          return
+        }
+      } catch (e) {
+        const errorMsg = e instanceof Error ? e.message : 'parse error'
+        setToken(`Error: invalid JSON in payload - ${errorMsg}`)
+        setDecoded('')
+        return
+      }
+
       const encodedHeader = base64UrlEncode(header)
       const encodedPayload = base64UrlEncode(payload)
       const signature = base64UrlEncode(`HMACSHA256(${encodedHeader}.${encodedPayload},${secret})`)
@@ -40,7 +89,7 @@ export default function JwtEncoder() {
       setToken(jwt)
       setDecoded('')
     } catch (e) {
-      setToken('Error: invalid JSON in header or payload')
+      setToken(`Error: ${e instanceof Error ? e.message : 'encoding error'}`)
       setDecoded('')
     }
   }
@@ -72,8 +121,11 @@ export default function JwtEncoder() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
     } catch (e) {
       if (import.meta.env.DEV) {
         console.error('Failed to copy to clipboard:', e)

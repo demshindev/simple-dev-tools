@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
 
 export default function StringEscape() {
@@ -6,6 +6,15 @@ export default function StringEscape() {
   const [output, setOutput] = useState('')
   const [mode, setMode] = useState<'escape' | 'unescape'>('escape')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const escape = (text: string): string => {
     return text
@@ -19,15 +28,16 @@ export default function StringEscape() {
 
   const unescape = (text: string): string => {
     return text
+      .replace(/\\\\/g, '\uE000')
       .replace(/\\n/g, '\n')
       .replace(/\\r/g, '\r')
       .replace(/\\t/g, '\t')
       .replace(/\\'/g, "'")
       .replace(/\\"/g, '"')
-      .replace(/\\\\/g, '\\')
+      .replace(/\uE000/g, '\\')
   }
 
-  const handleConvert = () => {
+  useEffect(() => {
     if (!input.trim()) {
       setOutput('')
       return
@@ -42,14 +52,17 @@ export default function StringEscape() {
     } catch (e) {
       setOutput('Error: invalid format')
     }
-  }
+  }, [input, mode])
 
   const copyToClipboard = async () => {
     if (output) {
       try {
         await navigator.clipboard.writeText(output)
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current)
+        }
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
       } catch (e) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy to clipboard:', e)
@@ -88,16 +101,7 @@ export default function StringEscape() {
         </div>
       </div>
 
-      <div className="mb-3 sm:mb-4">
-        <button
-          onClick={handleConvert}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          {mode === 'escape' ? 'Escape' : 'Unescape'}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Input text

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import React from 'react'
 
 export default function RegexTester() {
@@ -17,11 +17,11 @@ export default function RegexTester() {
     }
   }, [pattern, flags])
 
-  const testRegex = () => {
+  useEffect(() => {
     setError('')
     setMatches([])
 
-    if (!pattern.trim()) {
+    if (!pattern.trim() || !text.trim()) {
       return
     }
 
@@ -40,7 +40,7 @@ export default function RegexTester() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Invalid regex')
     }
-  }
+  }, [pattern, text, flags, regex])
 
   const getHighlightedText = (): React.ReactNode => {
     if (!pattern.trim() || error || !regex) return text
@@ -88,7 +88,6 @@ export default function RegexTester() {
             type="text"
             value={pattern}
             onChange={(e) => setPattern(e.target.value)}
-            onKeyUp={testRegex}
             className="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="\\d+"
           />
@@ -99,20 +98,10 @@ export default function RegexTester() {
             type="text"
             value={flags}
             onChange={(e) => setFlags(e.target.value)}
-            onKeyUp={testRegex}
             className="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="g, i, m"
           />
         </div>
-      </div>
-
-      <div className="mb-3 sm:mb-4">
-        <button
-          onClick={testRegex}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          Test
-        </button>
       </div>
 
       {error && (
@@ -125,10 +114,7 @@ export default function RegexTester() {
         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Test text:</label>
         <textarea
           value={text}
-          onChange={(e) => {
-            setText(e.target.value)
-            if (pattern) testRegex()
-          }}
+          onChange={(e) => setText(e.target.value)}
           className="w-full h-40 sm:h-48 p-3 sm:p-4 border border-gray-300 rounded-lg font-mono text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           placeholder="Enter text to test..."
         />

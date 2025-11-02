@@ -1,60 +1,52 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
 
 export default function JsonFormatter() {
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
   const [error, setError] = useState('')
+  const [mode, setMode] = useState<'format' | 'minify'>('format')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const formatJson = () => {
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!input.trim()) {
+      setOutput('')
+      setError('')
+      return
+    }
+
     try {
       setError('')
-      if (!input.trim()) {
-        setOutput('')
-        return
-      }
       const parsed = JSON.parse(input)
-      const formatted = JSON.stringify(parsed, null, 2)
-      setOutput(formatted)
+      if (mode === 'format') {
+        setOutput(JSON.stringify(parsed, null, 2))
+      } else {
+        setOutput(JSON.stringify(parsed))
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Invalid JSON')
       setOutput('')
     }
-  }
-
-  const minifyJson = () => {
-    try {
-      setError('')
-      if (!input.trim()) {
-        setOutput('')
-        return
-      }
-      const parsed = JSON.parse(input)
-      const minified = JSON.stringify(parsed)
-      setOutput(minified)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Invalid JSON')
-      setOutput('')
-    }
-  }
-
-  const validateJson = () => {
-    try {
-      setError('')
-      JSON.parse(input)
-      setError('Valid JSON')
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Invalid JSON')
-    }
-  }
+  }, [input, mode])
 
   const copyToClipboard = async () => {
     if (output) {
       try {
         await navigator.clipboard.writeText(output)
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current)
+        }
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
       } catch (e) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy to clipboard:', e)
@@ -67,38 +59,39 @@ export default function JsonFormatter() {
     <div>
       <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">JSON Formatter & Validator</h2>
       
-      <div className="mb-3 sm:mb-4 flex flex-wrap gap-2">
-        <button
-          onClick={formatJson}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
-        >
-          Format
-        </button>
-        <button
-          onClick={minifyJson}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-        >
-          Minify
-        </button>
-        <button
-          onClick={validateJson}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          Validate
-        </button>
+      <div className="mb-3 sm:mb-4">
+        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Mode:</label>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setMode('format')}
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
+              mode === 'format'
+                ? 'bg-primary-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Format
+          </button>
+          <button
+            onClick={() => setMode('minify')}
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
+              mode === 'minify'
+                ? 'bg-primary-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Minify
+          </button>
+        </div>
       </div>
 
       {error && (
-        <div
-          className={`mb-3 sm:mb-4 p-2 sm:p-3 text-xs sm:text-sm rounded-lg ${
-            error === 'Valid JSON' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-          }`}
-        >
+        <div className="mb-3 sm:mb-4 p-2 sm:p-3 text-xs sm:text-sm bg-red-100 text-red-800 rounded-lg">
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Input JSON

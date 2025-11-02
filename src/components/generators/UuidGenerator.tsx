@@ -1,18 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck, FiRefreshCw } from 'react-icons/fi'
 
 function generateUUID(version: 4 | 1): string {
   if (version === 4) {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID()
+    }
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = (Math.random() * 16) | 0
       const v = c === 'x' ? r : (r & 0x3) | 0x8
       return v.toString(16)
     })
   } else {
-    const now = Date.now()
-    const random = Math.random() * 0xffffffff
     return 'xxxxxxxx-xxxx-1xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = c === 'x' ? (now + random) % 16 : ((Math.random() * 16) | 0x8)
+      const r = c === 'x' ? (Date.now() + Math.random() * 0xffffffff) % 16 : ((Math.random() * 16) | 0x8)
       return r.toString(16)
     })
   }
@@ -23,6 +24,15 @@ export default function UuidGenerator() {
   const [count, setCount] = useState(1)
   const [version, setVersion] = useState<4 | 1>(4)
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const generate = () => {
     const newUuids = Array.from({ length: count }, () => generateUUID(version))
@@ -33,8 +43,11 @@ export default function UuidGenerator() {
     if (uuids.length > 0) {
       try {
         await navigator.clipboard.writeText(uuids.join('\n'))
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current)
+        }
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
       } catch (e) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy to clipboard:', e)
@@ -46,8 +59,11 @@ export default function UuidGenerator() {
   const copySingle = async (uuid: string) => {
     try {
       await navigator.clipboard.writeText(uuid)
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
     } catch (e) {
       if (import.meta.env.DEV) {
         console.error('Failed to copy to clipboard:', e)

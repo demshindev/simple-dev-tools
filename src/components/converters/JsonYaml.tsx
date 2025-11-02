@@ -1,153 +1,51 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
+// @ts-ignore - js-yaml types issue
+import yaml from 'js-yaml'
 
 function jsonToYaml(jsonStr: string): string {
   try {
     const obj = JSON.parse(jsonStr)
-    return convertToYaml(obj, 0)
+    return yaml.dump(obj, {
+      indent: 2,
+      lineWidth: -1,
+      noRefs: true,
+      quotingType: '"',
+      forceQuotes: false
+    })
   } catch (e) {
-    return 'Error: invalid JSON'
+    return `Error: ${e instanceof Error ? e.message : 'invalid JSON'}`
   }
 }
 
-function convertToYaml(obj: unknown, indent: number): string {
-  const indentStr = '  '.repeat(indent)
-  let result = ''
-
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      if (typeof item === 'object' && item !== null) {
-        result += `${indentStr}- ${convertToYaml(item, indent + 1).trimStart()}\n`
-      } else {
-        result += `${indentStr}- ${formatValue(item)}\n`
-      }
-    }
-  } else if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
-    for (const [key, value] of Object.entries(obj)) {
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        result += `${indentStr}${key}:\n${convertToYaml(value, indent + 1)}`
-      } else if (Array.isArray(value)) {
-        result += `${indentStr}${key}:\n${convertToYaml(value, indent + 1)}`
-      } else {
-        result += `${indentStr}${key}: ${formatValue(value)}\n`
-      }
-    }
+function isValidJSON(str: string): boolean {
+  try {
+    JSON.parse(str)
+    return true
+  } catch {
+    return false
   }
-
-  return result
 }
 
-function formatValue(value: unknown): string {
-  if (typeof value === 'string') {
-    if (value.includes('\n') || value.includes('"') || value.includes("'")) {
-      return `"${value.replace(/"/g, '\\"')}"`
-    }
-    return value
-  }
-  if (value === null) return 'null'
-  if (typeof value === 'boolean') return value.toString()
-  return String(value)
-}
+function looksLikeJSON(str: string): boolean {
+  const trimmed = str.trim()
+  return (trimmed.startsWith('{') && trimmed.endsWith('}')) || 
+         (trimmed.startsWith('[') && trimmed.endsWith(']'))
+} 
 
 function yamlToJson(yamlStr: string): string {
   try {
-    const lines = yamlStr.split('\n')
-    const obj = parseYaml(lines)
-    return JSON.stringify(obj, null, 2)
+    const trimmed = yamlStr.trim()
+    
+    if (looksLikeJSON(trimmed) && isValidJSON(trimmed)) {
+      return 'Error: input appears to be JSON format, not YAML.'
+    }
+    
+    const parsed = yaml.load(yamlStr)
+    return JSON.stringify(parsed, null, 2)
   } catch (e) {
-    return 'Error: invalid YAML'
+    return `Error: ${e instanceof Error ? e.message : 'invalid YAML'}`
   }
-}
-
-function parseYaml(lines: string[]): Record<string, unknown> | unknown[] {
-  let result: Record<string, unknown> | unknown[] = {}
-  let i = 0
-
-  while (i < lines.length) {
-    const line = lines[i].trim()
-    if (!line || line.startsWith('#')) {
-      i++
-      continue
-    }
-
-    if (line.startsWith('- ')) {
-      if (!Array.isArray(result)) {
-        const arr: unknown[] = []
-        for (const [k, v] of Object.entries(result)) {
-          arr.push({ [k]: v })
-        }
-        result = arr
-      }
-      const value = line.substring(2).trim()
-      if (Array.isArray(result)) {
-        result.push(parseValue(value))
-      }
-      i++
-    } else {
-      if (Array.isArray(result)) {
-        result = {}
-      }
-      const colonIndex = line.indexOf(':')
-      if (colonIndex === -1) {
-        i++
-        continue
-      }
-
-      const key = line.substring(0, colonIndex).trim()
-      const value = line.substring(colonIndex + 1).trim()
-
-      if (i + 1 < lines.length && lines[i + 1].match(/^\s+[-]/)) {
-        if (!Array.isArray(result)) {
-          result[key] = parseArray(lines, i + 1)
-        }
-        while (i + 1 < lines.length && lines[i + 1].match(/^\s+[-]/)) {
-          i++
-        }
-      } else if (value) {
-        if (!Array.isArray(result)) {
-          result[key] = parseValue(value)
-        }
-      } else {
-        if (!Array.isArray(result)) {
-          result[key] = {}
-        }
-      }
-      i++
-    }
-  }
-
-  return result
-}
-
-function parseArray(lines: string[], startIndex: number): unknown[] {
-  const arr: unknown[] = []
-  let i = startIndex
-  const baseIndent = lines[i].match(/^\s*/)?.[0].length || 0
-
-  while (i < lines.length) {
-    const line = lines[i]
-    const indent = line.match(/^\s*/)?.[0].length || 0
-
-    if (indent < baseIndent) break
-    if (line.trim().startsWith('- ')) {
-      arr.push(parseValue(line.trim().substring(2)))
-    }
-    i++
-  }
-
-  return arr
-}
-
-function parseValue(value: string): unknown {
-  if (value === 'true') return true
-  if (value === 'false') return false
-  if (value === 'null') return null
-  if (/^-?\d+$/.test(value)) return parseInt(value, 10)
-  if (/^-?\d+\.\d+$/.test(value)) return parseFloat(value)
-  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-    return value.slice(1, -1)
-  }
-  return value
 }
 
 export default function JsonYaml() {
@@ -155,8 +53,17 @@ export default function JsonYaml() {
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const convert = () => {
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
     if (!input.trim()) {
       setOutput('')
       return
@@ -167,14 +74,17 @@ export default function JsonYaml() {
     } else {
       setOutput(yamlToJson(input))
     }
-  }
+  }, [input, mode])
 
   const copyToClipboard = async () => {
     if (output) {
       try {
         await navigator.clipboard.writeText(output)
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current)
+        }
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
       } catch (e) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy to clipboard:', e)
@@ -213,16 +123,7 @@ export default function JsonYaml() {
         </div>
       </div>
 
-      <div className="mb-3 sm:mb-4">
-        <button
-          onClick={convert}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          Convert
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             {mode === 'json-yaml' ? 'JSON' : 'YAML'}
@@ -261,4 +162,5 @@ export default function JsonYaml() {
     </div>
   )
 }
+
 

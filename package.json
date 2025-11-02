@@ -10,13 +10,18 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "fast-xml-parser": "^4.3.5",
+    "js-yaml": "^4.1.0",
+    "lorem-ipsum": "^2.0.8",
     "marked": "^16.4.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-icons": "^4.11.0",
-    "react-router-dom": "^7.9.5"
+    "react-router-dom": "^7.9.5",
+    "sql-formatter": "^15.1.2"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/marked": "^5.0.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",

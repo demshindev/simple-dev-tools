@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
 
 export default function NumberBase() {
@@ -7,8 +7,17 @@ export default function NumberBase() {
   const [targetBase, setTargetBase] = useState<'decimal' | 'binary' | 'hex' | 'octal'>('hex')
   const [output, setOutput] = useState('')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const convertNumber = () => {
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
     if (!input.trim()) {
       setOutput('')
       return
@@ -16,6 +25,40 @@ export default function NumberBase() {
 
     try {
       const trimmedInput = input.trim()
+
+      if (base === targetBase) {
+        switch (base) {
+          case 'decimal':
+            if (!/^-?\d+$/.test(trimmedInput)) {
+              setOutput('Error: invalid number format')
+              return
+            }
+            setOutput(trimmedInput)
+            return
+          case 'binary':
+            if (!/^[01]+$/.test(trimmedInput)) {
+              setOutput('Error: invalid number format')
+              return
+            }
+            setOutput(trimmedInput)
+            return
+          case 'hex':
+            if (!/^[0-9A-Fa-f]+$/.test(trimmedInput)) {
+              setOutput('Error: invalid number format')
+              return
+            }
+            setOutput(trimmedInput.toUpperCase())
+            return
+          case 'octal':
+            if (!/^[0-7]+$/.test(trimmedInput)) {
+              setOutput('Error: invalid number format')
+              return
+            }
+            setOutput(trimmedInput)
+            return
+        }
+      }
+
       let decimal: number
 
       switch (base) {
@@ -74,14 +117,17 @@ export default function NumberBase() {
     } catch (e) {
       setOutput('Conversion error')
     }
-  }
+  }, [input, base, targetBase])
 
   const copyToClipboard = async () => {
     if (output) {
       try {
         await navigator.clipboard.writeText(output)
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current)
+        }
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
       } catch (e) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy to clipboard:', e)
@@ -132,16 +178,7 @@ export default function NumberBase() {
         </div>
       </div>
 
-      <div className="mb-3 sm:mb-4">
-        <button
-          onClick={convertNumber}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          Convert
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Input number:</label>
           <input

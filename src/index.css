@@ -17,13 +17,12 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  min-width: 300px;
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 
 #root {
   min-height: 100vh;
-  min-width: 300px;
+  overflow-x: hidden;
 }
 
 .markdown-preview {

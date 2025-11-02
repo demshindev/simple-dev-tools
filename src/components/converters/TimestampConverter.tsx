@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
 
 export default function TimestampConverter() {
@@ -7,6 +7,15 @@ export default function TimestampConverter() {
   const [mode, setMode] = useState<'to-datetime' | 'to-timestamp'>('to-datetime')
   const [copied, setCopied] = useState(false)
   const [currentTime, setCurrentTime] = useState(Date.now())
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -15,56 +24,64 @@ export default function TimestampConverter() {
     return () => clearInterval(interval)
   }, [])
 
-  const convertTimestampToDatetime = (ts: string) => {
-    const num = parseInt(ts)
-    if (isNaN(num)) return ''
-    
-    const date = num < 10000000000 ? new Date(num * 1000) : new Date(num)
-    return date.toISOString().replace('T', ' ').slice(0, 19)
-  }
-
-  const convertDatetimeToTimestamp = (dt: string) => {
-    let dtFormatted = dt.trim()
-    if (!dtFormatted.includes('T')) {
-      dtFormatted = dtFormatted.replace(' ', 'T')
-    }
-    if (!dtFormatted.match(/[+-]\d{2}:\d{2}$/) && !dtFormatted.endsWith('Z')) {
-      dtFormatted += 'Z'
-    }
-    const date = new Date(dtFormatted)
-    if (isNaN(date.getTime())) return ''
-    return date.getTime().toString()
-  }
-
-  const handleConvert = () => {
+  useEffect(() => {
     if (mode === 'to-datetime') {
       if (!timestamp.trim()) {
         setDatetime('')
         return
       }
-      const result = convertTimestampToDatetime(timestamp)
+      const num = parseInt(timestamp)
+      if (isNaN(num)) {
+        setDatetime('')
+        return
+      }
+      const date = num < 10000000000 ? new Date(num * 1000) : new Date(num)
+      const result = date.toISOString().replace('T', ' ').slice(0, 19)
       setDatetime(result)
-    } else {
+    }
+  }, [timestamp, mode])
+
+  useEffect(() => {
+    if (mode === 'to-timestamp') {
       if (!datetime.trim()) {
         setTimestamp('')
         return
       }
-      const result = convertDatetimeToTimestamp(datetime)
-      setTimestamp(result)
+      let dtFormatted = datetime.trim()
+      if (!dtFormatted.includes('T')) {
+        dtFormatted = dtFormatted.replace(' ', 'T')
+      }
+      if (!dtFormatted.match(/[+-]\d{2}:\d{2}$/) && !dtFormatted.endsWith('Z')) {
+        dtFormatted += 'Z'
+      }
+      const date = new Date(dtFormatted)
+      if (isNaN(date.getTime())) {
+        setTimestamp('')
+        return
+      }
+      setTimestamp(date.getTime().toString())
     }
-  }
+  }, [datetime, mode])
 
   const useCurrentTime = () => {
     const ts = currentTime.toString()
     setTimestamp(ts)
-    setDatetime(convertTimestampToDatetime(ts))
+    const num = parseInt(ts)
+    if (!isNaN(num)) {
+      const date = num < 10000000000 ? new Date(num * 1000) : new Date(num)
+      const result = date.toISOString().replace('T', ' ').slice(0, 19)
+      setDatetime(result)
+    }
   }
 
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
     } catch (e) {
       if (import.meta.env.DEV) {
         console.error('Failed to copy to clipboard:', e)
@@ -102,13 +119,7 @@ export default function TimestampConverter() {
         </div>
       </div>
 
-      <div className="mb-3 sm:mb-4 flex flex-wrap items-center gap-2 sm:gap-4">
-        <button
-          onClick={handleConvert}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          Convert
-        </button>
+      <div className="mb-3 sm:mb-4">
         <button
           onClick={useCurrentTime}
           className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
@@ -117,7 +128,7 @@ export default function TimestampConverter() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="block text-xs sm:text-sm font-medium text-gray-700">

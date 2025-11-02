@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiCopy, FiCheck } from 'react-icons/fi'
 
 export default function CaseConverter() {
@@ -6,8 +6,17 @@ export default function CaseConverter() {
   const [caseType, setCaseType] = useState<'lower' | 'upper' | 'title' | 'camel' | 'snake' | 'kebab'>('lower')
   const [output, setOutput] = useState('')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const convertCase = () => {
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
     if (!input.trim()) {
       setOutput('')
       return
@@ -29,9 +38,20 @@ export default function CaseConverter() {
           .join(' ')
         break
       case 'camel':
-        result = input.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
-          return index === 0 ? word.toLowerCase() : word.toUpperCase()
-        }).replace(/\s+/g, '')
+        result = input
+          .trim()
+          .split(/\s+/)
+          .map((word, index) => {
+            if (word.length === 0) return ''
+            const firstChar = word.charAt(0)
+            const rest = word.slice(1)
+            if (index === 0) {
+              return firstChar.toLowerCase() + rest.toLowerCase()
+            } else {
+              return firstChar.toUpperCase() + rest.toLowerCase()
+            }
+          })
+          .join('')
         break
       case 'snake':
         result = input.replace(/\s+/g, '_').toLowerCase()
@@ -41,14 +61,17 @@ export default function CaseConverter() {
         break
     }
     setOutput(result)
-  }
+  }, [input, caseType])
 
   const copyToClipboard = async () => {
     if (output) {
       try {
         await navigator.clipboard.writeText(output)
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current)
+        }
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
       } catch (e) {
         if (import.meta.env.DEV) {
           console.error('Failed to copy to clipboard:', e)
@@ -77,16 +100,7 @@ export default function CaseConverter() {
         </select>
       </div>
 
-      <div className="mb-3 sm:mb-4">
-        <button
-          onClick={convertCase}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          Convert
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Input text
