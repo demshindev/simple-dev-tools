@@ -110,7 +110,7 @@ export default function JsonFormatter() {
             placeholder='{"name": "example", "value": 123}'
           />
         </div>
-        <div>
+        <div className="min-w-0">
           <div className="flex items-center justify-between mb-2">
             <label className="block text-xs sm:text-sm font-medium text-gray-700">
               Result

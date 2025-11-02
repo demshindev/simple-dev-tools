@@ -61,15 +61,15 @@ export default function ColorPicker() {
   }
 
   return (
-    <div>
+    <div className="min-w-0">
       <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Color Picker & Contrast Checker</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
-        <div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <div className="min-w-0">
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Text color
           </label>
-          <div className="flex gap-2 mb-2">
+          <div className="flex gap-2 mb-2 min-w-0">
             <input
               type="color"
               value={color}
@@ -80,31 +80,31 @@ export default function ColorPicker() {
               type="text"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="flex-1 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="flex-1 min-w-0 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
-          <div className="bg-gray-50 p-2 sm:p-3 rounded-lg space-y-1">
-            <div className="text-xs sm:text-sm">
+          <div className="bg-gray-50 p-2 sm:p-3 rounded-lg space-y-1 min-w-0 overflow-hidden">
+            <div className="text-xs sm:text-sm break-words">
               <strong>RGB:</strong> rgb({rgb.r}, {rgb.g}, {rgb.b})
               <button
                 onClick={() => copyToClipboard(`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`, 'rgb')}
-                className="ml-2 text-primary-600 hover:text-primary-700"
+                className="ml-2 text-primary-600 hover:text-primary-700 flex-shrink-0 inline"
                 aria-label={copied === 'rgb' ? 'Copied to clipboard' : 'Copy RGB to clipboard'}
               >
                 {copied === 'rgb' ? <FiCheck size={14} /> : <FiCopy size={14} className="inline" />}
               </button>
             </div>
-            <div className="text-xs sm:text-sm">
+            <div className="text-xs sm:text-sm break-words">
               <strong>RGB (0-1):</strong> rgb({(rgb.r / 255).toFixed(2)}, {(rgb.g / 255).toFixed(2)}, {(rgb.b / 255).toFixed(2)})
             </div>
           </div>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Background color
           </label>
-          <div className="flex gap-2 mb-2">
+          <div className="flex gap-2 mb-2 min-w-0">
             <input
               type="color"
               value={backgroundColor}
@@ -115,15 +115,15 @@ export default function ColorPicker() {
               type="text"
               value={backgroundColor}
               onChange={(e) => setBackgroundColor(e.target.value)}
-              className="flex-1 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="flex-1 min-w-0 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
-          <div className="bg-gray-50 p-2 sm:p-3 rounded-lg space-y-1">
-            <div className="text-xs sm:text-sm">
+          <div className="bg-gray-50 p-2 sm:p-3 rounded-lg space-y-1 min-w-0 overflow-hidden">
+            <div className="text-xs sm:text-sm break-words">
               <strong>RGB:</strong> rgb({bgRgb.r}, {bgRgb.g}, {bgRgb.b})
               <button
                 onClick={() => copyToClipboard(`rgb(${bgRgb.r}, ${bgRgb.g}, ${bgRgb.b})`, 'bg-rgb')}
-                className="ml-2 text-primary-600 hover:text-primary-700"
+                className="ml-2 text-primary-600 hover:text-primary-700 flex-shrink-0 inline"
                 aria-label={copied === 'bg-rgb' ? 'Copied to clipboard' : 'Copy background RGB to clipboard'}
               >
                 {copied === 'bg-rgb' ? <FiCheck size={14} /> : <FiCopy size={14} className="inline" />}
@@ -148,8 +148,8 @@ export default function ColorPicker() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg min-w-0 overflow-hidden">
           <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">
             Contrast
           </h3>
@@ -172,15 +172,15 @@ export default function ColorPicker() {
           </div>
         </div>
 
-        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg min-w-0 overflow-hidden">
           <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">
             Color codes
           </h3>
-          <div className="space-y-2 text-xs sm:text-sm font-mono">
-            <div className="flex items-center justify-between flex-wrap gap-1">
-              <span>HEX:</span>
-              <span className="flex items-center gap-2">
-                <span className="break-all">{color}</span>
+          <div className="space-y-2 text-xs sm:text-sm font-mono min-w-0">
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <span className="flex-shrink-0">HEX:</span>
+              <span className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="break-all min-w-0">{color}</span>
                 <button
                   onClick={() => copyToClipboard(color, 'hex')}
                   className="text-primary-600 hover:text-primary-700 flex-shrink-0"
@@ -190,10 +190,10 @@ export default function ColorPicker() {
                 </button>
               </span>
             </div>
-            <div className="flex items-center justify-between flex-wrap gap-1">
-              <span>RGB:</span>
-              <span className="flex items-center gap-2">
-                <span className="break-all">rgb({rgb.r}, {rgb.g}, {rgb.b})</span>
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <span className="flex-shrink-0">RGB:</span>
+              <span className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="break-all min-w-0">rgb({rgb.r}, {rgb.g}, {rgb.b})</span>
                 <button
                   onClick={() => copyToClipboard(`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`, 'rgb-full')}
                   className="text-primary-600 hover:text-primary-700 flex-shrink-0"
@@ -203,10 +203,10 @@ export default function ColorPicker() {
                 </button>
               </span>
             </div>
-            <div className="flex items-center justify-between flex-wrap gap-1">
-              <span>RGBA:</span>
-              <span className="flex items-center gap-2">
-                <span className="break-all">rgba({rgb.r}, {rgb.g}, {rgb.b}, 1)</span>
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <span className="flex-shrink-0">RGBA:</span>
+              <span className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="break-all min-w-0">rgba({rgb.r}, {rgb.g}, {rgb.b}, 1)</span>
                 <button
                   onClick={() => copyToClipboard(`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`, 'rgba')}
                   className="text-primary-600 hover:text-primary-700 flex-shrink-0"
