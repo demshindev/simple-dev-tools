@@ -17,6 +17,42 @@ Sitemap: https://${domain}/sitemap.xml
 function generateSitemap(domain: string): string {
   const date = new Date().toISOString()
   
+  const categories = [
+    {
+      id: 'generators',
+      tools: ['uuid', 'lorem', 'hash']
+    },
+    {
+      id: 'text',
+      tools: ['case', 'regex', 'string-escape', 'text-diff', 'markdown-preview']
+    },
+    {
+      id: 'formatters',
+      tools: ['json-formatter', 'xml-formatter', 'sql-formatter']
+    },
+    {
+      id: 'converters',
+      tools: ['json-yaml', 'timestamp', 'number-base']
+    },
+    {
+      id: 'encoders',
+      tools: ['base64', 'jwt-encoder', 'url-encoder', 'html-encoder']
+    },
+    {
+      id: 'graphics',
+      tools: ['color']
+    }
+  ]
+  
+  const toolUrls = categories.flatMap(category =>
+    category.tools.map(tool => `  <url>
+    <loc>https://${domain}/tool/${category.id}/${tool}</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>`)
+  ).join('\n')
+  
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -25,6 +61,7 @@ function generateSitemap(domain: string): string {
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+${toolUrls}
 </urlset>
 `
 }

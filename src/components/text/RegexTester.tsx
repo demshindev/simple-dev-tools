@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import React from 'react'
 
 export default function RegexTester() {
   const [pattern, setPattern] = useState('')
@@ -49,7 +50,7 @@ export default function RegexTester() {
       
       if (matches.length === 0) return text
 
-      let result: (string | JSX.Element)[] = []
+      let result: (string | React.ReactElement)[] = []
       let lastIndex = 0
 
       matches.forEach((match, i) => {

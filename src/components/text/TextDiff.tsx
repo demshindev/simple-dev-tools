@@ -5,7 +5,7 @@ function diffStrings(oldText: string, newText: string): React.ReactNode {
   const oldLines = oldText.split('\n')
   const newLines = newText.split('\n')
   const maxLines = Math.max(oldLines.length, newLines.length)
-  const result: (string | JSX.Element)[] = []
+  const result: (string | React.ReactElement)[] = []
 
   for (let i = 0; i < maxLines; i++) {
     const oldLine = oldLines[i] || ''

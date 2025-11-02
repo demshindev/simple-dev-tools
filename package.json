@@ -11,14 +11,15 @@
   },
   "dependencies": {
     "marked": "^16.4.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-icons": "^4.11.0"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-icons": "^4.11.0",
+    "react-router-dom": "^7.9.5"
   },
   "devDependencies": {
     "@types/marked": "^5.0.2",
-    "@types/react": "^18.2.37",
-    "@types/react-dom": "^18.2.15",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "@vitejs/plugin-react": "^4.2.0",

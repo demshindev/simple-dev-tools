@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom'
 import { 
   FiArrowDown,
   FiClock, 
@@ -135,19 +136,20 @@ const categories: Category[] = [
 ]
 
 function App() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [expandedCategories, setExpandedCategories] = useState<Set<CategoryId>>(
     new Set(['generators'])
   )
-  const [activeTool, setActiveTool] = useState<ToolId | null>(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false)
 
-  const handleHomeClick = () => {
-    setActiveTool(null)
-    if (window.innerWidth < 768) {
-      setIsMobileMenuOpen(false)
-    }
-  }
+  const pathMatch = location.pathname.match(/^\/tool\/([^\/]+)\/([^\/]+)$/)
+  const matchedCategory = pathMatch ? categories.find(cat => cat.id === pathMatch[1]) : null
+  const currentCategoryId: CategoryId | null = matchedCategory ? matchedCategory.id : null
+  const currentToolId: ToolId | null = matchedCategory && pathMatch
+    ? (matchedCategory.tools.find(tool => tool.id === pathMatch[2])?.id as ToolId | undefined) || null
+    : null
 
   useEffect(() => {
     const handleResize = () => {
@@ -169,18 +171,23 @@ function App() {
     setExpandedCategories(newExpanded)
   }
 
-  const handleToolSelect = (toolId: ToolId) => {
-    setActiveTool(toolId)
+  const handleHomeClick = () => {
+    navigate('/')
     if (window.innerWidth < 768) {
       setIsMobileMenuOpen(false)
     }
   }
 
-  const activeToolData = categories
-    .flatMap(cat => cat.tools)
-    .find(tool => tool.id === activeTool)
-
-  const ActiveComponent = activeToolData?.component || null
+  useEffect(() => {
+    if (currentCategoryId) {
+      setExpandedCategories(prev => {
+        if (!prev.has(currentCategoryId)) {
+          return new Set([...prev, currentCategoryId])
+        }
+        return prev
+      })
+    }
+  }, [currentCategoryId])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 min-w-[300px] flex">
@@ -243,18 +250,23 @@ function App() {
                   }`}
                 >
                   {category.tools.map((tool) => (
-                    <button
+                    <Link
                       key={tool.id}
-                      onClick={() => handleToolSelect(tool.id)}
+                      to={`/tool/${category.id}/${tool.id}`}
+                      onClick={() => {
+                        if (window.innerWidth < 768) {
+                          setIsMobileMenuOpen(false)
+                        }
+                      }}
                       className={`w-full flex items-center gap-2 px-2 md:px-3 py-1.5 md:py-2 text-left rounded-lg transition text-sm md:text-base ${
-                        activeTool === tool.id
+                        currentToolId === tool.id && currentCategoryId === category.id
                           ? 'bg-primary-50 text-primary-700 font-medium'
                           : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     >
                       {tool.icon}
                       <span className="truncate">{tool.name}</span>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -295,25 +307,47 @@ function App() {
           
           <div className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8">
             <div className="bg-white rounded-lg md:rounded-xl shadow-lg md:shadow-xl p-3 sm:p-4 md:p-6 max-w-full overflow-x-auto">
-              {ActiveComponent ? (
-                <ActiveComponent />
-              ) : (
-                <div className="text-center text-gray-500 py-8 md:py-12 text-sm md:text-base">
-                  <div className="md:hidden mb-4">
-                    <button
-                      onClick={() => setIsMobileMenuOpen(true)}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-300 ease-in-out font-medium text-base"
-                    >
-                      <FiMenu size={20} />
-                      Select a tool
-                    </button>
+              <Routes>
+                <Route path="/" element={
+                  <div className="text-center text-gray-500 py-8 md:py-12 text-sm md:text-base">
+                    <div className="md:hidden mb-4">
+                      <button
+                        onClick={() => setIsMobileMenuOpen(true)}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-300 ease-in-out font-medium text-base"
+                      >
+                        <FiMenu size={20} />
+                        Select a tool
+                      </button>
+                    </div>
+                    <div className="text-gray-600">
+                      <p className="md:hidden mb-2">Please select a tool to get started</p>
+                      <p className="hidden md:block">Select a tool from the menu</p>
+                    </div>
                   </div>
-                  <div className="text-gray-600">
-                    <p className="md:hidden mb-2">Please select a tool to get started</p>
-                    <p className="hidden md:block">Select a tool from the menu</p>
+                } />
+                {categories.flatMap(category => 
+                  category.tools.map(tool => (
+                    <Route
+                      key={`${category.id}-${tool.id}`}
+                      path={`/tool/${category.id}/${tool.id}`}
+                      element={<tool.component />}
+                    />
+                  ))
+                )}
+                <Route path="*" element={
+                  <div className="text-center text-gray-500 py-8 md:py-12 text-sm md:text-base">
+                    <div className="text-gray-600">
+                      <p className="mb-4">Tool not found</p>
+                      <button
+                        onClick={handleHomeClick}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-300 ease-in-out font-medium"
+                      >
+                        Go to home
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                } />
+              </Routes>
             </div>
           </div>
           <Footer onPrivacyClick={() => setIsPrivacyOpen(true)} />
