@@ -194,9 +194,14 @@ function App() {
             <div>
               <button
                 onClick={handleHomeClick}
-                className="text-lg md:text-xl font-bold text-gray-800 hover:text-primary-600 transition cursor-pointer text-left"
+                className="flex items-center gap-2 text-lg md:text-xl font-bold text-gray-800 hover:text-primary-600 transition-colors duration-300 ease-in-out cursor-pointer text-left"
                 aria-label="Go to homepage"
               >
+                <img 
+                  src="/favicon.svg" 
+                  alt="Logo" 
+                  className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0"
+                />
                 {APP_NAME}
               </button>
             </div>
@@ -268,9 +273,14 @@ function App() {
             </button>
             <button
               onClick={handleHomeClick}
-              className="text-lg font-bold text-gray-800 hover:text-primary-600 transition cursor-pointer"
+              className="flex items-center gap-2 text-lg font-bold text-gray-800 hover:text-primary-600 transition-colors duration-300 ease-in-out cursor-pointer"
               aria-label="Go to homepage"
             >
+              <img 
+                src="/favicon.svg" 
+                alt="Logo" 
+                className="w-5 h-5 flex-shrink-0"
+              />
               {APP_NAME}
             </button>
             <div className="w-10" />
