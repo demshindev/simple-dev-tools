@@ -267,7 +267,7 @@ function App() {
               className="text-lg font-bold text-gray-800 hover:text-primary-600 transition cursor-pointer"
               aria-label="Go to homepage"
             >
-              DevUtils
+              SimpleDevTools
             </button>
             <div className="w-10" />
           </div>
