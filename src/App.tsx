@@ -139,12 +139,15 @@ function App() {
   const [expandedCategories, setExpandedCategories] = useState<Set<CategoryId>>(
     new Set(['generators'])
   )
-  const [activeTool, setActiveTool] = useState<ToolId | null>('uuid')
+  const [activeTool, setActiveTool] = useState<ToolId | null>(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false)
 
   const handleHomeClick = () => {
-    window.location.reload()
+    setActiveTool(null)
+    if (window.innerWidth < 768) {
+      setIsMobileMenuOpen(false)
+    }
   }
 
   useEffect(() => {
@@ -292,7 +295,19 @@ function App() {
                 <ActiveComponent />
               ) : (
                 <div className="text-center text-gray-500 py-8 md:py-12 text-sm md:text-base">
-                  Select a tool from the menu
+                  <div className="md:hidden mb-4">
+                    <button
+                      onClick={() => setIsMobileMenuOpen(true)}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-300 ease-in-out font-medium text-base"
+                    >
+                      <FiMenu size={20} />
+                      Select a tool
+                    </button>
+                  </div>
+                  <div className="text-gray-600">
+                    <p className="md:hidden mb-2">Please select a tool to get started</p>
+                    <p className="hidden md:block">Select a tool from the menu</p>
+                  </div>
                 </div>
               )}
             </div>
