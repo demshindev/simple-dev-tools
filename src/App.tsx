@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { 
-  FiArrowRight, 
   FiArrowDown,
   FiClock, 
   FiHash, 
@@ -228,31 +227,36 @@ function App() {
                     {category.icon}
                     <span className="font-medium text-gray-700">{category.name}</span>
                   </div>
-                  {expandedCategories.has(category.id) ? (
-                    <FiArrowDown className="text-gray-500 flex-shrink-0" size={16} />
-                  ) : (
-                    <FiArrowRight className="text-gray-500 flex-shrink-0" size={16} />
-                  )}
+                  <FiArrowDown 
+                    className={`text-gray-500 flex-shrink-0 transition-transform duration-300 ease-in-out ${
+                      expandedCategories.has(category.id) ? 'rotate-0' : '-rotate-90'
+                    }`} 
+                    size={16} 
+                  />
                 </button>
                 
-                {expandedCategories.has(category.id) && (
-                  <div className="ml-4 md:ml-6 mt-1 space-y-1">
-                    {category.tools.map((tool) => (
-                      <button
-                        key={tool.id}
-                        onClick={() => handleToolSelect(tool.id)}
-                        className={`w-full flex items-center gap-2 px-2 md:px-3 py-1.5 md:py-2 text-left rounded-lg transition text-sm md:text-base ${
-                          activeTool === tool.id
-                            ? 'bg-primary-50 text-primary-700 font-medium'
-                            : 'text-gray-600 hover:bg-gray-50'
-                        }`}
-                      >
-                        {tool.icon}
-                        <span className="truncate">{tool.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div 
+                  className={`ml-4 md:ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${
+                    expandedCategories.has(category.id) 
+                      ? 'max-h-[1000px] opacity-100' 
+                      : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  {category.tools.map((tool) => (
+                    <button
+                      key={tool.id}
+                      onClick={() => handleToolSelect(tool.id)}
+                      className={`w-full flex items-center gap-2 px-2 md:px-3 py-1.5 md:py-2 text-left rounded-lg transition text-sm md:text-base ${
+                        activeTool === tool.id
+                          ? 'bg-primary-50 text-primary-700 font-medium'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {tool.icon}
+                      <span className="truncate">{tool.name}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             ))}
           </nav>
