@@ -1,0 +1,17 @@
+{
+  "name": "SimpleDevTools",
+  "short_name": "SimpleDevTools",
+  "description": "A collection of useful developer tools",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0ea5e9"
+}
+
