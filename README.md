@@ -27,6 +27,7 @@ A collection of useful developer tools in one place. All tools work completely i
 ## Upcoming Features
 
 - Code Prettifier (coming soon)
+- Import/Export functionality for file-based data exchange
 
 ## Installation
 
