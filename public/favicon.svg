@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0284c7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" fill="url(#grad)" rx="14"/>
+  <g fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer gear circle -->
+    <circle cx="32" cy="32" r="16" stroke-width="2.5"/>
+    <!-- Inner circle -->
+    <circle cx="32" cy="32" r="6" stroke-width="2"/>
+    <!-- Gear teeth -->
+    <path d="M32 8 L32 14 M32 50 L32 56 M56 32 L50 32 M8 32 L14 32 M46.34 17.66 L51.66 12.34 M12.34 51.66 L17.66 46.34 M46.34 46.34 L51.66 51.66 M12.34 12.34 L17.66 17.66"/>
+  </g>
+</svg>
+

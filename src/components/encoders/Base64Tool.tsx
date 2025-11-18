@@ -1,0 +1,124 @@
+import { useState, useEffect, useRef } from 'react'
+import { FiCopy, FiCheck } from 'react-icons/fi'
+
+export default function Base64Tool() {
+  const [input, setInput] = useState('')
+  const [output, setOutput] = useState('')
+  const [mode, setMode] = useState<'encode' | 'decode'>('encode')
+  const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!input.trim()) {
+      setOutput('')
+      return
+    }
+
+    try {
+      if (mode === 'encode') {
+        const encoded = btoa(unescape(encodeURIComponent(input)))
+        setOutput(encoded)
+      } else {
+        const decoded = decodeURIComponent(escape(atob(input)))
+        setOutput(decoded)
+      }
+    } catch (e) {
+      setOutput(mode === 'encode' ? 'Encoding error' : 'Decoding error: invalid Base64 format')
+    }
+  }, [input, mode])
+
+  const copyToClipboard = async () => {
+    if (output) {
+      try {
+        await navigator.clipboard.writeText(output)
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current)
+        }
+        setCopied(true)
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
+      } catch (e) {
+        if (import.meta.env.DEV) {
+          console.error('Failed to copy to clipboard:', e)
+        }
+      }
+    }
+  }
+
+  return (
+    <div>
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Base64 Encoder/Decoder</h2>
+      
+      <div className="mb-4 sm:mb-6">
+        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Mode:</label>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setMode('encode')}
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
+              mode === 'encode'
+                ? 'bg-primary-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Encode (Text → Base64)
+          </button>
+          <button
+            onClick={() => setMode('decode')}
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
+              mode === 'decode'
+                ? 'bg-primary-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Decode (Base64 → Text)
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+        <div>
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            {mode === 'encode' ? 'Text to encode' : 'Base64 string'}
+          </label>
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="w-full h-48 sm:h-64 p-3 sm:p-4 border border-gray-300 rounded-lg font-mono text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder={mode === 'encode' ? 'Enter text...' : 'Enter Base64 string...'}
+          />
+        </div>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700">
+              Result
+            </label>
+            {output && (
+              <button
+                onClick={copyToClipboard}
+                className="flex items-center gap-1 text-xs sm:text-sm text-primary-600 hover:text-primary-700"
+                aria-label={copied ? 'Copied to clipboard' : 'Copy to clipboard'}
+              >
+                {copied ? <FiCheck size={16} /> : <FiCopy size={16} />}
+                <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy'}</span>
+              </button>
+            )}
+          </div>
+          <textarea
+            value={output}
+            readOnly
+            className="w-full h-48 sm:h-64 p-3 sm:p-4 border border-gray-300 rounded-lg font-mono text-xs sm:text-sm bg-gray-50 focus:outline-none"
+            placeholder="Result will appear here..."
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
